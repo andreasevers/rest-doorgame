@@ -9,8 +9,8 @@ Under the standard assumptions, contestants who switch have a 2/3 chance of winn
 ## Building the solution
 
 ### Create a controller
-Define its RequestMapping
-Inject the GamesRepository
+- Define its RequestMapping
+- Inject the GamesRepository
 
 ### Create resources
 Separate from domain model with simple POJOs
