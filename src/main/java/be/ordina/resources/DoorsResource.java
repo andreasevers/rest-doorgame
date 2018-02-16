@@ -16,12 +16,12 @@
 
 package be.ordina.resources;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class DoorsResource {
 
-    private volatile Set<DoorResource> doors = new HashSet<DoorResource>();
+    private volatile Set<DoorResource> doors = new LinkedHashSet<>();
 
     public Set<DoorResource> getDoors() {
 		return doors;

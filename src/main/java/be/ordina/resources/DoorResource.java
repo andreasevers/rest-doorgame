@@ -21,11 +21,21 @@ import be.ordina.model.DoorStatus;
 
 public class DoorResource {
 
+	private final Long id;
+
     private volatile DoorContent content;
 
     private volatile DoorStatus status;
 
-    public DoorContent getContent() {
+	public DoorResource(Long id) {
+		this.id = id;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public DoorContent getContent() {
 		return content;
 	}
 

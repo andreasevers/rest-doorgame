@@ -1,31 +1,26 @@
 package be.ordina.controllers;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
-
+import be.ordina.model.*;
+import be.ordina.repo.GameRepository;
+import be.ordina.resources.DoorResource;
+import be.ordina.resources.DoorsResource;
+import be.ordina.resources.GameResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
-import be.ordina.model.Door;
-import be.ordina.model.DoorDoesNotExistException;
-import be.ordina.model.DoorStatus;
-import be.ordina.model.Game;
-import be.ordina.model.GameDoesNotExistException;
-import be.ordina.model.IllegalTransitionException;
-import be.ordina.repo.GameRepository;
-import be.ordina.resources.DoorResource;
-import be.ordina.resources.DoorsResource;
-import be.ordina.resources.GameResource;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+import static java.util.Comparator.comparingLong;
+import static java.util.stream.Collectors.toCollection;
 
 @Controller
 @RequestMapping("/games")
@@ -69,17 +64,21 @@ final class GamesController {
     ResponseEntity<DoorsResource> showDoors(@PathVariable Long gameId) throws GameDoesNotExistException {
         Game game = this.gameRepository.retrieve(gameId);
         DoorsResource resource = new DoorsResource();
-        for (Door door : game.getDoors()) {
-		DoorResource doorResource = new DoorResource();
-		doorResource.setContent(door.getContent());
-		doorResource.setStatus(door.getStatus());
+        for (Door door : getSortedDoors(game)) {
+            DoorResource doorResource = new DoorResource(door.getId());
+            doorResource.setContent(door.getContent());
+            doorResource.setStatus(door.getStatus());
             resource.getDoors().add(doorResource);
         }
 
         return new ResponseEntity<DoorsResource>(resource, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/{gameId}/doors/{doorId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = {
+    private Set<Door> getSortedDoors(Game game) {
+        return game.getDoors().stream().sorted(comparingLong(Door::getId)).collect(toCollection(LinkedHashSet::new));
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, value = "/{gameId}/doors/{doorId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = {
         MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_XML_VALUE })
     ResponseEntity<Void> modifyDoor(@PathVariable Long gameId, @PathVariable Long doorId, @RequestBody Map<String, String> body)
         throws MissingKeyException, GameDoesNotExistException, IllegalTransitionException, DoorDoesNotExistException {
